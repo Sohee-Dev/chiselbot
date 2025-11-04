@@ -1,7 +1,7 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../models/auth_state.dart';
+import '../models/auth/auth_state.dart';
 import '../models/user_model.dart';
 import '../repositories/auth_repository.dart';
 import '../repositories/i_auth_repository.dart';
@@ -32,6 +32,21 @@ final authNotifierProvider =
     StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
   return AuthNotifier(repository);
+});
+
+final currentUserInfoProvider = Provider<(String, String)>((ref) {
+  final authState = ref.watch(authNotifierProvider);
+
+  return authState.maybeWhen(
+    (isLoading, isLoggedIn, user, token, errorMessage) {
+      if (isLoggedIn && user != null) {
+        final name = user.name?.isNotEmpty == true ? user.name! : '개발자';
+        return (name, user.email);
+      }
+      return ('개발자', '로그인해주세요');
+    },
+    orElse: () => ('개발자', '로그인해주세요'),
+  );
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
