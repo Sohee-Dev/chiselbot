@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'user_avatar.dart';
 
 class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
   const MainAppbar({super.key});
-
-  static const String _avatarAddress = 'https://picsum.photos/20';
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +22,7 @@ class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
             style: GoogleFonts.poppins(fontSize: 16),
             textAlign: TextAlign.center,
           ),
-          CircleAvatar(
-              radius: 15, backgroundImage: NetworkImage(_avatarAddress))
+          UserAvatar(radius: 15)
         ],
       ),
     );
