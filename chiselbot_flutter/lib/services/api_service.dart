@@ -14,6 +14,8 @@ class ApiService {
 
   Map<String, String> _headers({bool jsonBody = true}) {
     final h = <String, String>{};
+    // 서버에 "JSON 주세요" 힌트를 주기 위해 Accept 추가
+    h['Accept'] = 'application/json';
     if (jsonBody) h['Content-Type'] = 'application/json; charset=utf-8';
     if (_jwt != null && _jwt!.isNotEmpty) h['Authorization'] = 'Bearer $_jwt';
     return h;
@@ -47,15 +49,23 @@ class ApiService {
         queryParameters: {'categoryId': '$categoryId', 'level': level});
 
     final res = await http.get(uri, headers: _headers(jsonBody: false));
-    final m = jsonDecode(res.body);
 
-    if (res.statusCode == 200) {
-      if (m is Map && m['success'] == true) {
-        return InterviewQuestion.fromJson(m['data']);
-      }
-      return InterviewQuestion.fromJson(m);
+    // 먼저 상태코드 확인
+    if (res.statusCode != 200) {
+      // HTML이 온 경우를 쉽게 눈치채기 위한 보호
+      final body = res.body;
+      final preview = body.length > 200 ? body.substring(0, 200) : body;
+      throw Exception('질문 조회 실패 (HTTP ${res.statusCode})\n'
+          'URL: $uri\n'
+          'Preview: ${preview.replaceAll('\n', ' ')}');
     }
-    throw Exception('질문 조회 실패');
+
+    // 여기서부터 JSON만 파싱
+    final m = jsonDecode(res.body);
+    if (m is Map && m['success'] == true) {
+      return InterviewQuestion.fromJson(m['data']);
+    }
+    return InterviewQuestion.fromJson(m as Map<String, dynamic>);
   }
 
   Future<CoachFeedback> coach(

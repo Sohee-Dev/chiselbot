@@ -1,7 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../models/cards.dart';
-import '../providers/auth_notifier.dart';
 import '../widgets/card_view.dart';
 import '../widgets/qna_quick_card.dart';
 import 'package:flutter/material.dart';
@@ -17,14 +14,14 @@ import '../models/cards.dart';
 import 'card_view.dart';
 import 'notice_view.dart';
 
-class MainView extends ConsumerStatefulWidget {
+class MainView extends StatefulWidget {
   const MainView({super.key});
 
   @override
-  ConsumerState<MainView> createState() => _MainViewState();
+  State<MainView> createState() => _MainViewState();
 }
 
-class _MainViewState extends ConsumerState<MainView> {
+class _MainViewState extends State<MainView> {
   bool _isLoading = true;
   final double _cardRatio = .17;
 
@@ -213,30 +210,17 @@ class _MainViewState extends ConsumerState<MainView> {
   }
 
   Widget _buildTitles(BuildContext context, MediaQueryData mediaQuery) {
-    final authState = ref.watch(authNotifierProvider);
-
-    final userName = authState.maybeWhen(
-      (isLoading, isLoggedIn, user, token, errorMessage) {
-        if (isLoggedIn && user != null) {
-          return user.name?.isNotEmpty == true ? user.name! : '개발자';
-        }
-        return '개발자';
-      },
-      orElse: () => '개발자',
-    );
-
     return Padding(
       padding: EdgeInsets.only(
         top: mediaQuery.padding.top + 10,
         left: mediaQuery.size.width * .05,
       ),
       child: Row(
-        children: [
-          const Text("안녕하세요, ",
+        children: const [
+          Text("안녕하세요, ",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text("$userName님",
-              style:
-                  const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          Text("개발자님",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         ],
       ),
     );

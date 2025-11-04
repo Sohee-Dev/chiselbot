@@ -57,7 +57,6 @@ class Inquiry {
   }
 
   factory Inquiry.fromJson(Map<String, dynamic> j) {
-    // 백이 키를 'id'로 보낼 수도, 'inquiryId'로 보낼 수도 있어 방어
     final id = j['inquiryId'] ?? j['id'];
     return Inquiry(
       inquiryId: (id is int) ? id : int.parse(id.toString()),

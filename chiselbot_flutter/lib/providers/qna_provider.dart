@@ -5,16 +5,21 @@ import '../models/api_models.dart'; // InterviewCategory/Question/CoachFeedback
 import '../models/inquiry.dart'; // Inquiry 모델
 import '../services/api_service.dart';
 
-/// ===============================
-/// 면접 코칭용 - 기존 ChangeNotifier 유지
-/// ===============================
+/// 면접 코칭용
 class QnaProvider extends ChangeNotifier {
   final ApiService api;
-
   QnaProvider(this.api);
 
   InterviewQuestion? currentQuestion;
   CoachFeedback? lastFeedback;
+
+  // 프론트 전용 UX 상태
+  int attemptCount = 0; // 시도 횟수 (프론트에서만 증가)
+  bool hintVisible = false; // 힌트 1차 노출 여부
+  int extraHintIndex = 0; // 추가 힌트 단계
+  bool modelVisible = false; // 힌트에 답 x
+  bool typingDone = false; // 질문 타이핑 완료 여부
+
   bool loading = false;
   String? error;
 
@@ -26,6 +31,12 @@ class QnaProvider extends ChangeNotifier {
     loading = true;
     error = null;
     notifyListeners();
+    hintVisible = false;
+    extraHintIndex = 0;
+    modelVisible = false;
+    attemptCount = 0;
+    typingDone = false;
+    lastFeedback = null;
 
     try {
       print('질문 요청 categoryId=$categoryId, level=$level');
@@ -50,16 +61,20 @@ class QnaProvider extends ChangeNotifier {
       return;
     }
 
+    // 중복 요청 방지: 이미 요청 중이면 return
+    if (loading) return;
+
     loading = true;
     error = null;
     notifyListeners();
-
     try {
-      final feedback = await api.coach(
+      final fb = await api.coach(
         questionId: currentQuestion!.questionId,
         userAnswer: userAnswer,
       );
-      lastFeedback = feedback;
+      lastFeedback = fb;
+      attemptCount = 1; // ← 고정(표시 용도 없어도 안전하게 유지)
+      modelVisible = false; // ← 항상 비공개
     } catch (e) {
       error = e.toString();
     } finally {
@@ -67,33 +82,69 @@ class QnaProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  // 힌트: 첫 클릭 시 바로 1개 키워드가 보이도록
+  void revealHint() {
+    hintVisible = true;
+    if (extraHintIndex == 0) extraHintIndex = 1; // 첫 힌트 버튼 = 첫 키워드
+    notifyListeners();
+  }
+
+  // 힌트 추가 공개 (한 번 누를 때마다 키워드 1개씩 더 보여주기)
+  void revealExtraHint() {
+    extraHintIndex += 1;
+    notifyListeners();
+  }
+
+  // void revealExtraHint() {
+  //   // 모범답안(or 백엔드 hint)이 있으면 거기서 키워드 뽑아서 단계별로 제공
+  //   extraHintIndex += 1;
+  //   notifyListeners();
+  // }
+
+  void revealModel() {
+    // 프론트 정책: 시도 2회 이상일 때만 오픈
+    if (attemptCount >= 2) {
+      modelVisible = true;
+      notifyListeners();
+    }
+  }
+
+  // 모범 답안 토글
+  void toggleModelVisible() {
+    modelVisible = !modelVisible;
+    notifyListeners();
+  }
+
+  void markTypingDone() {
+    typingDone = true;
+    notifyListeners();
+  }
 }
 
-/// ===============================
-/// QnA(1:1 문의)용 - Riverpod 프로바이더 추가
-/// ===============================
+/// QnA(1:1 문의)용
 
-/// ApiService를 Riverpod에서도 쓰기 위한 Provider (baseUrl은 실제 환경에 맞게)
-const String _kBaseUrl = 'http://10.0.2.2:8080'; // 에뮬레이터 기준. 실기기는 PC IP로.
+// ApiService를 Riverpod에서도 쓰기 위한 Provider (baseUrl은 실제 환경에 맞게)
+const String _kBaseUrl = 'http://10.0.2.2:8080';
 final apiServiceProvider = Provider<ApiService>((ref) => ApiService(_kBaseUrl));
 
-/// 현재 로그인한 관리자 ID (없으면 null, 있을때 1)
+// 현재 로그인한 관리자 ID (없으면 null, 있을때 1)
 final currentAdminIdProvider = StateProvider<int?>((ref) => 1);
 
-/// 문의 목록
+// 문의 목록
 final inquiriesProvider = FutureProvider<List<Inquiry>>((ref) async {
   final api = ref.read(apiServiceProvider);
   return api.fetchInquiries();
 });
 
-/// 문의 상세 (family)
+// 문의 상세 (family)
 final inquiryDetailProvider =
     FutureProvider.family<Inquiry, int>((ref, inquiryId) async {
   final api = ref.read(apiServiceProvider);
   return api.fetchInquiryDetail(inquiryId);
 });
 
-/// 문의 등록(사용자) 컨트롤러
+// 문의 등록(사용자) 컨트롤러
 class CreateInquiryController extends AsyncNotifier<void> {
   @override
   Future<void> build() async {} // 상태 초기화
@@ -111,7 +162,7 @@ final createInquiryProvider =
     AsyncNotifierProvider<CreateInquiryController, void>(
         () => CreateInquiryController());
 
-/// 답변 등록(관리자) 컨트롤러
+// 답변 등록(관리자) 컨트롤러
 class AnswerInquiryController extends AsyncNotifier<void> {
   @override
   Future<void> build() async {}
