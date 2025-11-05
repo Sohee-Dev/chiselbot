@@ -94,6 +94,10 @@ class StorageDetailScreen extends ConsumerWidget {
               _section(context,
                   title: '힌트', body: d.hint.isNotEmpty ? d.hint : '—'),
               const SizedBox(height: 12),
+              if (d.questionAnswer.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                _section(context, title: '모범답안', body: d.questionAnswer),
+              ],
               if (d.similarity != null) ...[
                 const SizedBox(height: 12),
                 _SimilarityGauge(value: d.similarity!),

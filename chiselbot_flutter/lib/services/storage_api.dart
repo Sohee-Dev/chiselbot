@@ -61,6 +61,7 @@ extension StorageApi on ApiService {
     required double similarity,
     String feedback = '',
     String hint = '',
+    String? questionAnswer,
   }) async {
     final uri = Uri.parse('$baseUrl/api/storages/storage/save');
     final res = await http.post(
@@ -72,6 +73,7 @@ extension StorageApi on ApiService {
         'similarity': similarity,
         'feedback': feedback,
         'hint': hint,
+        'questionAnswer': questionAnswer,
       }),
     );
 

@@ -10,6 +10,7 @@ class StorageItem {
   final String interviewLevel;
   final String categoryName;
   final DateTime createdAt;
+  final String questionAnswer;
 
   StorageItem({
     required this.storageId,
@@ -23,6 +24,7 @@ class StorageItem {
     required this.interviewLevel,
     required this.categoryName,
     required this.createdAt,
+    required this.questionAnswer,
   });
 
   factory StorageItem.fromJson(Map<String, dynamic> j) {
@@ -38,6 +40,7 @@ class StorageItem {
       similarity: (j['similarity'] as num?)?.toDouble(),
       interviewLevel: j['interviewLevel'] ?? '',
       categoryName: j['categoryName'] ?? '',
+      questionAnswer: j['questionAnswer'] ?? '',
       createdAt: _parseCreatedAt(created),
     );
   }
@@ -72,6 +75,7 @@ class StorageDetail extends StorageItem {
     required super.similarity,
     required super.interviewLevel,
     required super.categoryName,
+    required super.questionAnswer,
     required super.createdAt,
   });
 
@@ -86,6 +90,7 @@ class StorageDetail extends StorageItem {
         similarity: (j['similarity'] as num?)?.toDouble(),
         interviewLevel: j['interviewLevel'] ?? '',
         categoryName: j['categoryName'] ?? '',
+        questionAnswer: j['questionAnswer'] ?? '',
         createdAt: StorageItem._parseCreatedAt(j['createdAt']?.toString()),
       );
 }

@@ -22,7 +22,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   late QnaProvider qna;
 
   bool _submitted = false; // 코칭 1회 제한
-  bool _showModel = false; // ⬅️ 모범답안 노출 토글 상태
+  bool _showModel = false; // 모범답안 노출 토글 상태
+
+  bool _saving = false; // 저장 중
+  bool _saved = false; // 저장 완료 후
 
   @override
   void didChangeDependencies() {
@@ -51,39 +54,73 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         title: const Text('AI 면접 코치'),
         actions: [
-          IconButton(
-            iconSize: 28,
-            icon: const Icon(Icons.bookmark_add_rounded),
-            tooltip: '보관하기',
-            onPressed: (qna.lastFeedback != null &&
-                    qna.currentQuestion != null &&
-                    !_disableSave(qna))
-                ? () async {
-                    final q = qna.currentQuestion!;
-                    final fb = qna.lastFeedback!;
-                    try {
-                      await api.saveStorage(
-                        questionId: q.questionId,
-                        userAnswer: fb.userAnswer,
-                        similarity: fb.similarity,
-                        feedback: fb.feedback ?? '',
-                        hint: fb.hint ?? '',
-                      );
-
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('보관함에 저장되었습니다.')),
-                      );
-                      ref.invalidate(storageListProvider);
-                      await ref.read(storageListProvider.notifier).refresh();
-                    } catch (e) {
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('보관 실패: $e')),
-                      );
-                    }
-                  }
-                : null,
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: (_saving)
+                  // 저장 진행 중: 작은 로딩 인디케이터
+                  ? const SizedBox(
+                      key: ValueKey('saving'),
+                      width: 36,
+                      height: 36,
+                      child: Padding(
+                        padding: EdgeInsets.all(8),
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : IconButton(
+                      key: ValueKey('saveBtn'),
+                      iconSize: 28,
+                      tooltip: _saved ? '저장 완료' : '보관하기',
+                      icon: Icon(
+                        _saved
+                            ? Icons.check_circle_rounded
+                            : Icons.bookmark_add_rounded,
+                      ),
+                      // 조건: 결과가 있고, 현재 질문이 있고, 저장 안 했고, 로딩 아님
+                      onPressed: (qna.lastFeedback != null &&
+                              qna.currentQuestion != null &&
+                              !_disableSave(qna) &&
+                              !_saved)
+                          ? () async {
+                              final q = qna.currentQuestion!;
+                              final fb = qna.lastFeedback!;
+                              setState(() => _saving = true);
+                              try {
+                                await api.saveStorage(
+                                  questionId: q.questionId,
+                                  userAnswer: fb.userAnswer,
+                                  similarity: fb.similarity,
+                                  feedback: fb.feedback ?? '',
+                                  hint: fb.hint ?? '',
+                                  questionAnswer:
+                                      fb.questionAnswer ?? q.answerText,
+                                );
+                                if (!mounted) return;
+                                setState(() {
+                                  _saving = false;
+                                  _saved = true; // 저장 완료 → 체크 아이콘 고정
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('보관함에 저장되었습니다.')),
+                                );
+                                ref.invalidate(storageListProvider);
+                                await ref
+                                    .read(storageListProvider.notifier)
+                                    .refresh();
+                              } catch (e) {
+                                if (!mounted) return;
+                                setState(() => _saving = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('보관 실패: $e')),
+                                );
+                              }
+                            }
+                          : null,
+                    ),
+            ),
           ),
         ],
       ),
@@ -157,7 +194,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       } else {
                                         setState(() {
                                           _submitted = true;
-                                          _showModel = false; // ⬅️ 제출 직후 기본 숨김
+                                          _showModel = false; // 제출 직후 기본 숨김
                                         });
                                       }
                                     },
@@ -167,7 +204,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: (qna.loading) ? null : qna.revealHint,
+                              // 힌트가 이미 노출되었으면 비활성화
+                              onPressed: (!qna.loading && !qna.hintVisible)
+                                  ? qna.revealHint
+                                  : null,
                               child: const Text('힌트 보기'),
                             ),
                           ),
@@ -189,7 +229,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                                       _ctrl.clear();
                                       setState(() {
                                         _submitted = false;
-                                        _showModel = false; // ⬅️ 다음 문제 시 숨김
+                                        _showModel = false; // 다음 문제 시 숨김
                                       });
 
                                       if (qna.error != null && mounted) {
