@@ -1,27 +1,21 @@
-import '../models/cards.dart';
-import '../widgets/card_view.dart';
-import '../widgets/qna_quick_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+import '../models/cards.dart';
 import '../providers/app_providers.dart';
-
-import '../models/api_models.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-
-import '../core/constants.dart';
-import '../models/cards.dart';
-import 'card_view.dart';
+import '../widgets/card_view.dart';
+import 'main_view_title.dart';
 import 'notice_view.dart';
 
-class MainView extends StatefulWidget {
+class MainView extends ConsumerStatefulWidget {
   const MainView({super.key});
 
   @override
-  State<MainView> createState() => _MainViewState();
+  ConsumerState<MainView> createState() => _MainViewState();
 }
 
-class _MainViewState extends State<MainView> {
+class _MainViewState extends ConsumerState<MainView> {
   bool _isLoading = true;
   final double _cardRatio = .17;
 
@@ -147,7 +141,7 @@ class _MainViewState extends State<MainView> {
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildTitles(context, mediaQuery),
+        MainViewTitle(context, mediaQuery),
         Divider(color: Colors.grey.shade800),
         NoticeView(),
         if (_isLoading)
@@ -206,23 +200,6 @@ class _MainViewState extends State<MainView> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildTitles(BuildContext context, MediaQueryData mediaQuery) {
-    return Padding(
-      padding: EdgeInsets.only(
-        top: mediaQuery.padding.top + 10,
-        left: mediaQuery.size.width * .05,
-      ),
-      child: Row(
-        children: const [
-          Text("안녕하세요, ",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          Text("개발자님",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        ],
-      ),
     );
   }
 }
