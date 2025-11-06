@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.net.URI;
 
 @Order(0)
-@RestControllerAdvice
+@RestControllerAdvice(annotations = RestControllerAdvice.class)
 public class ApiExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(ApiExceptionHandler.class);

@@ -16,34 +16,37 @@ import org.springframework.stereotype.Component;
 @Order(1)
 public class UserDataLoader implements CommandLineRunner {
 
-    private final UserJpaRepository userJpaRepository;
-    private final PasswordEncoder passwordEncoder;
+	private final UserJpaRepository userJpaRepository;
+	private final PasswordEncoder passwordEncoder;
 
-    @Override
-    public void run(String... args) throws Exception {
+	@Override
+	public void run(String... args) throws Exception {
 
-        User testUser1 = userJpaRepository.save(new User(
-                null,
-                "유저1",
-                "test1@naver.com",
-                passwordEncoder.encode("1234")
-                , Provider.LOCAL));
+		User testUser1 = userJpaRepository.save(new User(
+				null,
+				"유저1",
+				"test1@naver.com",
+				passwordEncoder.encode("1234"),
+				null
+				, Provider.LOCAL));
 
-        User testUser2 = userJpaRepository.save(new User(
-                null,
-                "유저2",
-                "test2@naver.com",
-                passwordEncoder.encode("1234")
-                , Provider.LOCAL));
+		User testUser2 = userJpaRepository.save(new User(
+				null,
+				"유저2",
+				"test2@naver.com",
+				passwordEncoder.encode("1234"),
+				null,
+				Provider.LOCAL));
 
 
-        User testUser3 = userJpaRepository.save(new User(
-                        null,
-                        "유저3",
-                        "test3@naver.com",
-                        passwordEncoder.encode("1234")
-                        , Provider.LOCAL
-                )
-        );
-    }
+		User testUser3 = userJpaRepository.save(new User(
+						null,
+						"유저3",
+						"test3@naver.com",
+						passwordEncoder.encode("1234"),
+						null,
+						Provider.LOCAL
+				)
+		);
+	}
 }

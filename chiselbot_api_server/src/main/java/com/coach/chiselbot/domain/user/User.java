@@ -25,7 +25,10 @@ public class User extends BaseEntity {
     @Column
     private String password;
 
-    @Enumerated(EnumType.STRING)
+	@Column
+	private String profileImage;
+
+	@Enumerated(EnumType.STRING)
     private Provider provider;
 
     /*
