@@ -44,7 +44,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode.themeMode,
       onGenerateRoute: AppRouter.generateRoute,
-      initialRoute: RoutePaths.login, // 로그인 화면으로
+      initialRoute: RoutePaths.root, // 로그인 화면으로
     );
   }
 }
