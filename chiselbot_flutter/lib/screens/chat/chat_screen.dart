@@ -154,7 +154,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             return LoadingPane(
               // 카드가 너무 위에 붙지 않도록 기본 여백 제공(LoadingPane 기본값 48)
               // 필요 시: topPadding: 72,
-              minDuration: const Duration(seconds: 10), // 최소 체류시간(진행도)
               tipInterval: const Duration(milliseconds: 5500), // 긴 팁 느리게 교체
               tips: const [
                 '의도 파악 중… \n\n\n질문이 묻는 핵심이 무엇인지\n\n 먼저 한 문장으로 정리해 보세요. '
@@ -166,6 +165,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 '예시 보강 중… \n\n\n자랑거리보다 “문제→행동→결과→교훈” 흐름이 더 강력합니다. \n\n숫자(%)나 Before/After를 1개라도 넣어주면 신뢰도가 확 올라갑니다.',
                 '마무리 준비 중… \n\n\n마지막 문장은 “그래서 저는 다음에 이렇게 하겠습니다”처럼\n\n 미래 지향 한 줄이면 충분합니다.',
               ],
+              character: Image.asset(
+                'assets/images/chiselBot.png',
+                width: 160,
+                fit: BoxFit.contain,
+              ),
             );
           }
 
