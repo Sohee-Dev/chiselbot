@@ -44,7 +44,7 @@ public class InquiryService {
         int pageSize = 10;
         Pageable pageable = PageRequest.of(page, pageSize, Sort.by("id").descending());
 
-        return inquiryRepository.findAllWithUserAnswer(pageable).map(InquiryResponseDTO.AdminInquiryList::new);
+        return inquiryRepository.findAllWithUserAnswer(pageable).map(inquiry -> new InquiryResponseDTO.AdminInquiryList(inquiry));
     }
 
     /**
