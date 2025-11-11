@@ -1,28 +1,25 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'user_avatar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class MainAppbar extends StatelessWidget implements PreferredSizeWidget {
+import '../providers/storage_providers.dart';
+
+class MainAppbar extends ConsumerWidget implements PreferredSizeWidget {
   const MainAppbar({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AppBar(
       automaticallyImplyLeading: false,
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: Icon(Icons.menu)),
-          Text(
-            "ChiselBot",
-            style: GoogleFonts.poppins(fontSize: 16),
-            textAlign: TextAlign.center,
+            onPressed: () async {
+              await ref.read(storageListProvider.notifier).refresh();
+              Scaffold.of(context).openDrawer();
+            },
+            icon: Icon(Icons.menu),
           ),
-          UserAvatar(radius: 15)
         ],
       ),
     );
