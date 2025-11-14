@@ -77,6 +77,7 @@ public class PromptService {
 
     // 레벨별 활성화된 프롬프트 목록
     // 레벨마다 활성화된 프롬프트를 찾고, 존재하는 것만 리스트로 만들어 반환
+    @Transactional(readOnly = true)
     public List<PromptResponse.FindById> getActivePrompts() {
         List<PromptResponse.FindById> result = new ArrayList<>();
 
@@ -102,6 +103,7 @@ public class PromptService {
     }
 
     // 레벨별 프롬프트 목록 조회
+    @Transactional(readOnly = true)
     public List<PromptResponse.FindAll> getPromptsByLevel(InterviewLevel level) {
         List<Prompt> prompts = promptRepository.findByLevelOrderByIdDesc(level);
         return PromptResponse.FindAll.from(prompts);
@@ -109,6 +111,7 @@ public class PromptService {
 
 
     // 프롬프트 상세조회
+    @Transactional(readOnly = true)
     public PromptResponse.FindById getPromptById(Long id) {
         Prompt prompt = promptRepository.findById(id)
                 .orElseThrow(() -> new AdminException500(Define.PROMPT_NOT_FOUND));
